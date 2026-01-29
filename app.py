@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from db import get_connection
+import os   # ✅ ADD THIS
 
 app = Flask(__name__)
-app.secret_key = "secret123"
+app.secret_key = os.environ.get("SECRET_KEY", "secret123")  # ✅ BETTER PRACTICE
 
 # ---------- REGISTER ----------
 @app.route("/register", methods=["GET", "POST"])
@@ -96,7 +97,7 @@ def result():
         return redirect(url_for("login"))
 
     conn = get_connection()
-    cur = conn.cursor(dictionary=True)
+    cur = conn.cursor()
 
     cur.execute(
         "SELECT * FROM patients WHERE username=%s ORDER BY id DESC LIMIT 1",
@@ -117,5 +118,8 @@ def logout():
     return redirect(url_for("login"))
 
 
+# ✅ THIS IS THE MOST IMPORTANT CHANGE
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
